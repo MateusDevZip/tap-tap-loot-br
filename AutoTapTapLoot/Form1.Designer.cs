@@ -55,6 +55,7 @@
             label7 = new Label();
             labelStatusTap = new Label();
             labelStatusBuff = new Label();
+            comboBoxLanguage = new ComboBox();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownPacketsPerSecond).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownTapsPerPacket).BeginInit();
@@ -92,7 +93,7 @@
             label1.Name = "label1";
             label1.Size = new Size(109, 15);
             label1.TabIndex = 0;
-            label1.Text = "Packets Per Second";
+            label1.Text = "Pacotes Por Segundo";
             // 
             // label2
             // 
@@ -101,7 +102,7 @@
             label2.Name = "label2";
             label2.Size = new Size(89, 15);
             label2.TabIndex = 1;
-            label2.Text = "Taps Per Packet";
+            label2.Text = "Taps Por Pacote";
             // 
             // numericUpDownPacketsPerSecond
             // 
@@ -147,7 +148,7 @@
             groupBox2.Size = new Size(370, 420);
             groupBox2.TabIndex = 2;
             groupBox2.TabStop = false;
-            groupBox2.Text = "Buff Settings";
+            groupBox2.Text = "Configurações de Amplificadores";
             // 
             // label3
             // 
@@ -157,7 +158,7 @@
             label3.Name = "label3";
             label3.Size = new Size(278, 15);
             label3.TabIndex = 2;
-            label3.Text = "Value is percent added to each buff (ex. 1 = +100%)";
+            label3.Text = "O valor é percentual adicionado a cada amplificador (ex. 1 = +100%)";
             // 
             // tableLayoutPanel4
             // 
@@ -179,7 +180,7 @@
             buttonBuffsApply.Name = "buttonBuffsApply";
             buttonBuffsApply.Size = new Size(173, 41);
             buttonBuffsApply.TabIndex = 0;
-            buttonBuffsApply.Text = "Apply Buffs";
+            buttonBuffsApply.Text = "Aplicar Amplificadores";
             buttonBuffsApply.UseVisualStyleBackColor = true;
             buttonBuffsApply.Click += buttonBuffsApply_Click;
             // 
@@ -189,7 +190,7 @@
             buttonBuffsDefault.Name = "buttonBuffsDefault";
             buttonBuffsDefault.Size = new Size(173, 41);
             buttonBuffsDefault.TabIndex = 1;
-            buttonBuffsDefault.Text = "Disable Buffs";
+            buttonBuffsDefault.Text = "Restaurar Padrão";
             buttonBuffsDefault.UseVisualStyleBackColor = true;
             buttonBuffsDefault.Click += buttonBuffsDefault_Click;
             // 
@@ -230,7 +231,7 @@
             groupBox1.Size = new Size(238, 204);
             groupBox1.TabIndex = 1;
             groupBox1.TabStop = false;
-            groupBox1.Text = "Auto Tap Settings";
+            groupBox1.Text = "Configurações de Auto Tap";
             // 
             // tableLayoutPanel6
             // 
@@ -252,7 +253,7 @@
             buttonAutoTapEnable.Name = "buttonAutoTapEnable";
             buttonAutoTapEnable.Size = new Size(107, 41);
             buttonAutoTapEnable.TabIndex = 0;
-            buttonAutoTapEnable.Text = "Enable Auto Tap";
+            buttonAutoTapEnable.Text = "Ativar Auto Tap";
             buttonAutoTapEnable.UseVisualStyleBackColor = true;
             buttonAutoTapEnable.Click += buttonAutoTapEnable_Click;
             // 
@@ -262,19 +263,20 @@
             buttonAutoTapDisable.Name = "buttonAutoTapDisable";
             buttonAutoTapDisable.Size = new Size(107, 41);
             buttonAutoTapDisable.TabIndex = 1;
-            buttonAutoTapDisable.Text = "Disable Auto Tap";
+            buttonAutoTapDisable.Text = "Desativar Auto Tap";
             buttonAutoTapDisable.UseVisualStyleBackColor = true;
             buttonAutoTapDisable.Click += buttonAutoTapDisable_Click;
             // 
             // groupBox3
-            // 
+            //
+            groupBox3.Controls.Add(comboBoxLanguage);
             groupBox3.Controls.Add(tableLayoutPanel5);
             groupBox3.Location = new Point(3, 3);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(238, 204);
+            groupBox3.Size = new Size(238, 235);
             groupBox3.TabIndex = 2;
             groupBox3.TabStop = false;
-            groupBox3.Text = "Status";
+            groupBox3.Text = "Status de Conexão";
             // 
             // tableLayoutPanel5
             // 
@@ -306,7 +308,7 @@
             label4.Name = "label4";
             label4.Size = new Size(87, 15);
             label4.TabIndex = 0;
-            label4.Text = "Tap Pipe Status";
+            label4.Text = "Status do Pipe de Tap";
             // 
             // labelStatusPipeTap
             // 
@@ -324,7 +326,7 @@
             label6.Name = "label6";
             label6.Size = new Size(90, 15);
             label6.TabIndex = 2;
-            label6.Text = "Buff Pipe Status";
+            label6.Text = "Status do Pipe de Amplificador";
             // 
             // labelStatusPipeBuff
             // 
@@ -342,7 +344,7 @@
             label5.Name = "label5";
             label5.Size = new Size(55, 15);
             label5.TabIndex = 4;
-            label5.Text = "Auto Tap";
+            label5.Text = "Auto Tap (Automático)";
             // 
             // label7
             // 
@@ -351,7 +353,7 @@
             label7.Name = "label7";
             label7.Size = new Size(34, 15);
             label7.TabIndex = 5;
-            label7.Text = "Buffs";
+            label7.Text = "Amplificadores";
             // 
             // labelStatusTap
             // 
@@ -370,7 +372,18 @@
             labelStatusBuff.Size = new Size(38, 15);
             labelStatusBuff.TabIndex = 7;
             labelStatusBuff.Text = "label9";
-            // 
+            //
+            // comboBoxLanguage
+            //
+            comboBoxLanguage.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxLanguage.FormattingEnabled = true;
+            comboBoxLanguage.Items.AddRange(new object[] { "Português", "English" });
+            comboBoxLanguage.Location = new Point(6, 204);
+            comboBoxLanguage.Name = "comboBoxLanguage";
+            comboBoxLanguage.Size = new Size(226, 23);
+            comboBoxLanguage.TabIndex = 1;
+            comboBoxLanguage.SelectedIndexChanged += comboBoxLanguage_SelectedIndexChanged;
+            //
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -378,7 +391,7 @@
             ClientSize = new Size(650, 450);
             Controls.Add(tableLayoutPanel2);
             Name = "Form1";
-            Text = "AutoTapTapLoot";
+            Text = "AutoTapTapLoot - Tap Tap Loot Modificador";
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownPacketsPerSecond).EndInit();
@@ -425,5 +438,6 @@
         private Label label7;
         private Label labelStatusTap;
         private Label labelStatusBuff;
+        private ComboBox comboBoxLanguage;
     }
 }

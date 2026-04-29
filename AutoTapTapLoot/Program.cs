@@ -3,13 +3,13 @@ namespace AutoTapTapLoot
     internal static class Program
     {
         /// <summary>
-        ///  The main entry point for the application.
+        /// Ponto de entrada principal da aplicação.
         /// </summary>
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
+            // Para personalizar a configuração da aplicação, como definir configurações de DPI alta ou fonte padrão,
+            // veja https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             Application.Run(new Form1());
         }

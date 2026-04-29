@@ -12,6 +12,88 @@ namespace AutoTapTapLoot
 {
 	public partial class Form1 : Form
 	{
+		private static class Localization
+		{
+			public static readonly Dictionary<string, string> PT = new()
+			{
+				["PacketsPerSecond"]      = "Pacotes Por Segundo",
+				["TapsPerPacket"]         = "Taps Por Pacote",
+				["AutoTapSettings"]       = "Configurações de Auto Tap",
+				["BuffSettings"]          = "Configurações de Amplificadores",
+				["ConnectionStatus"]      = "Status de Conexão",
+				["TapPipeStatus"]         = "Status do Pipe de Tap",
+				["BuffPipeStatus"]        = "Status do Pipe de Amplificador",
+				["BuffHint"]              = "O valor é percentual adicionado a cada amplificador (ex. 1 = +100%)",
+				["AutoTapLabel"]          = "Auto Tap (Automático)",
+				["BuffsLabel"]            = "Amplificadores",
+				["EnableAutoTap"]         = "Ativar Auto Tap",
+				["DisableAutoTap"]        = "Desativar Auto Tap",
+				["ApplyBuffs"]            = "Aplicar Amplificadores",
+				["DefaultBuffs"]          = "Restaurar Padrão",
+				["StatusUnknown"]         = "Desconhecido",
+				["StatusWaiting"]         = "Aguardando...",
+				["StatusConnected"]       = "Conectado",
+				["StatusDisconnected"]    = "Desconectado",
+				["StatusError"]           = "Erro",
+				["StatusEnabled"]         = "Ativado",
+				["StatusDisabled"]        = "Desativado",
+				["StatusApplied"]         = "Aplicado",
+				["StatusDefault"]         = "Padrão",
+				["ErrLoadSettings"]       = "Falha ao carregar configurações:",
+				["ErrTitle"]              = "Erro",
+				["WindowTitle"]           = "AutoTapTapLoot - Modificador",
+				["Buff_Health"]           = "Vida",
+				["Buff_Attack"]           = "Ataque",
+				["Buff_Armor"]            = "Armadura",
+				["Buff_CritChance"]       = "Chance de Crítico",
+				["Buff_Regeneration"]     = "Regeneração",
+				["Buff_SpellPower"]       = "Poder Mágico",
+				["Buff_Thorns"]           = "Espinhos",
+				["Buff_Block"]            = "Bloqueio",
+				["Buff_Dodge"]            = "Esquiva",
+				["Buff_Slow"]             = "Lentidão",
+			};
+
+			public static readonly Dictionary<string, string> EN = new()
+			{
+				["PacketsPerSecond"]      = "Packets Per Second",
+				["TapsPerPacket"]         = "Taps Per Packet",
+				["AutoTapSettings"]       = "Auto Tap Settings",
+				["BuffSettings"]          = "Buff Settings",
+				["ConnectionStatus"]      = "Status",
+				["TapPipeStatus"]         = "Tap Pipe Status",
+				["BuffPipeStatus"]        = "Buff Pipe Status",
+				["BuffHint"]              = "Value is percent added to each buff (ex. 1 = +100%)",
+				["AutoTapLabel"]          = "Auto Tap",
+				["BuffsLabel"]            = "Buffs",
+				["EnableAutoTap"]         = "Enable Auto Tap",
+				["DisableAutoTap"]        = "Disable Auto Tap",
+				["ApplyBuffs"]            = "Apply Buffs",
+				["DefaultBuffs"]          = "Disable Buffs",
+				["StatusUnknown"]         = "Unknown",
+				["StatusWaiting"]         = "Waiting...",
+				["StatusConnected"]       = "Connected",
+				["StatusDisconnected"]    = "Disconnected",
+				["StatusError"]           = "Error",
+				["StatusEnabled"]         = "Enabled",
+				["StatusDisabled"]        = "Disabled",
+				["StatusApplied"]         = "Applied",
+				["StatusDefault"]         = "Default",
+				["ErrLoadSettings"]       = "Failed to load settings:",
+				["ErrTitle"]              = "Error",
+				["WindowTitle"]           = "AutoTapTapLoot - Game Modifier",
+				["Buff_Health"]           = "Health",
+				["Buff_Attack"]           = "Attack",
+				["Buff_Armor"]            = "Armor",
+				["Buff_CritChance"]       = "Crit Chance",
+				["Buff_Regeneration"]     = "Regeneration",
+				["Buff_SpellPower"]       = "Spell Power",
+				["Buff_Thorns"]           = "Thorns",
+				["Buff_Block"]            = "Block",
+				["Buff_Dodge"]            = "Dodge",
+				["Buff_Slow"]             = "Slow",
+			};
+		}
 		private static readonly Color DarkBackground = Color.FromArgb(30, 30, 30);
 		private static readonly Color DarkControl    = Color.FromArgb(50, 50, 50);
 
@@ -24,9 +106,10 @@ namespace AutoTapTapLoot
 			public decimal TapsPerPacket    { get; set; } = 1;
 			public Dictionary<string, bool>    BuffChecked { get; set; } = [];
 			public Dictionary<string, decimal> BuffValues  { get; set; } = [];
+			public string Language { get; set; } = "pt";
 		}
 
-		private static readonly string[] BuffNames =
+		private static readonly string[] BuffKeys =
 		{
 			"Health", "Attack", "Armor", "CritChance", "Regeneration",
 			"SpellPower", "Thorns", "Block", "Dodge", "Slow"
@@ -34,6 +117,7 @@ namespace AutoTapTapLoot
 
 		private readonly Dictionary<string, CheckBox>       _buffChecks = [];
 		private readonly Dictionary<string, NumericUpDown>  _buffValues = [];
+		private Dictionary<string, string> _strings = Localization.PT;
 
 		private NamedPipeServerStream? _buffPipe;
 		private NamedPipeServerStream? _tapPipe;
@@ -44,13 +128,14 @@ namespace AutoTapTapLoot
 			InitializeComponent();
 			BuildBuffTable();
 			LoadSettings();
+			ApplyLanguage();
 			ApplyDarkTheme();
 
 			StartBuffPipeWorker();
 			StartTapPipeWorker();
 		}
 
-		// ── Settings ─────────────────────────────────────────────────────────
+		// ── Configurações ────────────────────────────────────────────────────────
 
 		private void LoadSettings()
 		{
@@ -60,25 +145,29 @@ namespace AutoTapTapLoot
 				var s = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(SettingsPath));
 				if (s == null) return;
 
+				_strings = (s.Language == "en") ? Localization.EN : Localization.PT;
+				if (comboBoxLanguage != null)
+					comboBoxLanguage.SelectedIndex = (s.Language == "en") ? 1 : 0;
+
 				numericUpDownPacketsPerSecond.Value = Math.Clamp(s.PacketsPerSecond,
 					numericUpDownPacketsPerSecond.Minimum, numericUpDownPacketsPerSecond.Maximum);
 				numericUpDownTapsPerPacket.Value = Math.Clamp(s.TapsPerPacket,
 					numericUpDownTapsPerPacket.Minimum, numericUpDownTapsPerPacket.Maximum);
 
-				foreach (string name in BuffNames)
+				foreach (string key in BuffKeys)
 				{
-					if (s.BuffChecked.TryGetValue(name, out bool chk))
-						_buffChecks[name].Checked = chk;
-					if (s.BuffValues.TryGetValue(name, out decimal val))
-						_buffValues[name].Value = Math.Clamp(val,
-							_buffValues[name].Minimum, _buffValues[name].Maximum);
+					if (s.BuffChecked.TryGetValue(key, out bool chk))
+						_buffChecks[key].Checked = chk;
+					if (s.BuffValues.TryGetValue(key, out decimal val))
+						_buffValues[key].Value = Math.Clamp(val,
+							_buffValues[key].Minimum, _buffValues[key].Maximum);
 				}
 			}
 			catch (Exception ex)
-			{ 
+			{
 				MessageBox.Show(
-					$"Failed to load settings:\n{ex.Message}",
-					"Error",
+					$"{_strings["ErrLoadSettings"]}\n{ex.Message}",
+					_strings["ErrTitle"],
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error
 				);
@@ -91,8 +180,9 @@ namespace AutoTapTapLoot
 			{
 				PacketsPerSecond = numericUpDownPacketsPerSecond.Value,
 				TapsPerPacket    = numericUpDownTapsPerPacket.Value,
-				BuffChecked      = BuffNames.ToDictionary(n => n, n => _buffChecks[n].Checked),
-				BuffValues       = BuffNames.ToDictionary(n => n, n => _buffValues[n].Value),
+				BuffChecked      = BuffKeys.ToDictionary(n => n, n => _buffChecks[n].Checked),
+				BuffValues       = BuffKeys.ToDictionary(n => n, n => _buffValues[n].Value),
+				Language         = (comboBoxLanguage?.SelectedIndex == 1) ? "en" : "pt",
 			};
 			File.WriteAllText(SettingsPath, JsonConvert.SerializeObject(s, Formatting.Indented));
 		}
@@ -103,42 +193,43 @@ namespace AutoTapTapLoot
 			base.OnFormClosing(e);
 		}
 
-		// ── Buff UI ──────────────────────────────────────────────────────────
+		// ── UI de Amplificadores ─────────────────────────────────────────────────
 
 		private void BuildBuffTable()
 		{
-			labelStatusBuff.Text     = "Unknown";
+			labelStatusBuff.Text     = _strings["StatusUnknown"];
 			labelStatusBuff.ForeColor = Color.Gray;
 
 			tableLayoutPanelBuffs.AutoSize  = true;
 			tableLayoutPanelBuffs.GrowStyle = TableLayoutPanelGrowStyle.AddRows;
 			tableLayoutPanelBuffs.SuspendLayout();
-			tableLayoutPanelBuffs.RowCount = BuffNames.Length;
+			tableLayoutPanelBuffs.RowCount = BuffKeys.Length;
 			tableLayoutPanelBuffs.Controls.Clear();
 
-			for (int i = 0; i < BuffNames.Length; i++)
+			for (int i = 0; i < BuffKeys.Length; i++)
 			{
-				string name = BuffNames[i];
+				string key = BuffKeys[i];
+				string displayName = _strings[$"Buff_{key}"];
 
-				var chk = new CheckBox { 
-					Checked = true, 
-					AutoSize = true 
+				var chk = new CheckBox {
+					Checked = true,
+					AutoSize = true
 				};
-				var lbl = new Label { 
-					Text = name, 
-					AutoSize = true, 
-					ForeColor = Color.White 
+				var lbl = new Label {
+					Text = displayName,
+					AutoSize = true,
+					ForeColor = Color.White
 				};
 				var num = new NumericUpDown {
 					Minimum       = -10_000_000,
 					Maximum       = 10_000_000,
 					DecimalPlaces = 2,
-					Value         = (name != "Slow") ? 1 : -1,
+					Value         = (key != "Slow") ? 1 : -1,
 					Width         = 120
 				};
 
-				_buffChecks[name] = chk;
-				_buffValues[name] = num;
+				_buffChecks[key] = chk;
+				_buffValues[key] = num;
 
 				tableLayoutPanelBuffs.Controls.Add(chk, 0, i);
 				tableLayoutPanelBuffs.Controls.Add(lbl, 1, i);
@@ -148,13 +239,38 @@ namespace AutoTapTapLoot
 			tableLayoutPanelBuffs.ResumeLayout();
 		}
 
-		// ── Theme ─────────────────────────────────────────────────────────────
+		// ── Tema ───────────────────────────────────────────────────────────────
 
 		private void ApplyDarkTheme()
 		{
 			BackColor = DarkBackground;
 			ForeColor = Color.White;
 			ApplyThemeToControls(Controls);
+		}
+
+		private void ApplyLanguage()
+		{
+			_strings = (comboBoxLanguage?.SelectedIndex == 1) ? Localization.EN : Localization.PT;
+
+			Text = _strings["WindowTitle"];
+			label1.Text = _strings["PacketsPerSecond"];
+			label2.Text = _strings["TapsPerPacket"];
+			groupBox1.Text = _strings["AutoTapSettings"];
+			groupBox2.Text = _strings["BuffSettings"];
+			label3.Text = _strings["BuffHint"];
+			buttonAutoTapEnable.Text = _strings["EnableAutoTap"];
+			buttonAutoTapDisable.Text = _strings["DisableAutoTap"];
+			buttonBuffsApply.Text = _strings["ApplyBuffs"];
+			buttonBuffsDefault.Text = _strings["DefaultBuffs"];
+			groupBox3.Text = _strings["ConnectionStatus"];
+			label4.Text = _strings["TapPipeStatus"];
+			label5.Text = _strings["AutoTapLabel"];
+			label6.Text = _strings["BuffPipeStatus"];
+			label7.Text = _strings["BuffsLabel"];
+
+			BuildBuffTable();
+
+			SaveSettings();
 		}
 
 		private void ApplyThemeToControls(Control.ControlCollection controls)
@@ -193,7 +309,7 @@ namespace AutoTapTapLoot
 			}
 		}
 
-		// ── Helpers ───────────────────────────────────────────────────────────
+		// ── Funções Auxiliares ────────────────────────────────────────────────────
 
 		private static void SetLabelStatus(Label label, string text, Color color)
 		{
@@ -220,11 +336,11 @@ namespace AutoTapTapLoot
 			pipe.Flush();
 		}
 
-		// ── Pipes ─────────────────────────────────────────────────────────────
+		// ── Pipes ──────────────────────────────────────────────────────────────
 
 		private void StartTapPipeWorker()
 		{
-			SetLabelStatus(labelStatusTap, "Disabled", Color.Red);
+			SetLabelStatus(labelStatusTap, _strings["StatusDisabled"], Color.Red);
 
 			var thread = new Thread(() =>
 			{
@@ -232,7 +348,7 @@ namespace AutoTapTapLoot
 				{
 					try
 					{
-						SetLabelStatus(labelStatusPipeTap, "Waiting...", Color.Orange);
+						SetLabelStatus(labelStatusPipeTap, _strings["StatusWaiting"], Color.Orange);
 
 						_tapPipe = new NamedPipeServerStream(
 							"TapTapLootxTheFarmerWasReplaced",
@@ -240,7 +356,7 @@ namespace AutoTapTapLoot
 							PipeTransmissionMode.Byte, PipeOptions.None);
 
 						_tapPipe.WaitForConnection();
-						SetLabelStatus(labelStatusPipeTap, "Connected", Color.Lime);
+						SetLabelStatus(labelStatusPipeTap, _strings["StatusConnected"], Color.Lime);
 
 						while (_tapPipe.IsConnected)
 						{
@@ -255,11 +371,11 @@ namespace AutoTapTapLoot
 							Thread.Sleep(1000 / pps);
 						}
 
-						SetLabelStatus(labelStatusPipeTap, "Disconnected", Color.Red);
+						SetLabelStatus(labelStatusPipeTap, _strings["StatusDisconnected"], Color.Red);
 					}
 					catch
 					{
-						SetLabelStatus(labelStatusPipeTap, "Error", Color.Red);
+						SetLabelStatus(labelStatusPipeTap, _strings["StatusError"], Color.Red);
 					}
 					finally
 					{
@@ -282,7 +398,7 @@ namespace AutoTapTapLoot
 				{
 					try
 					{
-						SetLabelStatus(labelStatusPipeBuff, "Waiting...", Color.Orange);
+						SetLabelStatus(labelStatusPipeBuff, _strings["StatusWaiting"], Color.Orange);
 
 						_buffPipe = new NamedPipeServerStream(
 							"TapTapLootxBongoCat",
@@ -290,16 +406,16 @@ namespace AutoTapTapLoot
 							PipeTransmissionMode.Byte, PipeOptions.None);
 
 						_buffPipe.WaitForConnection();
-						SetLabelStatus(labelStatusPipeBuff, "Connected", Color.Lime);
+						SetLabelStatus(labelStatusPipeBuff, _strings["StatusConnected"], Color.Lime);
 
 						while (_buffPipe.IsConnected)
 							Thread.Sleep(100);
 
-						SetLabelStatus(labelStatusPipeBuff, "Disconnected", Color.Red);
+						SetLabelStatus(labelStatusPipeBuff, _strings["StatusDisconnected"], Color.Red);
 					}
 					catch
 					{
-						SetLabelStatus(labelStatusPipeBuff, "Error", Color.Red);
+						SetLabelStatus(labelStatusPipeBuff, _strings["StatusError"], Color.Red);
 					}
 					finally
 					{
@@ -314,17 +430,17 @@ namespace AutoTapTapLoot
 			thread.Start();
 		}
 
-		// ── Button handlers ───────────────────────────────────────────────────
+		// ── Manipuladores de Botão ────────────────────────────────────────────
 
 		private void buttonBuffsApply_Click(object sender, EventArgs e)
 		{
-			SetLabelStatus(labelStatusBuff, "Applied", Color.Lime);
+			SetLabelStatus(labelStatusBuff, _strings["StatusApplied"], Color.Lime);
 
 			var buffs = new List<object>();
-			foreach (string name in BuffNames)
+			foreach (string key in BuffKeys)
 			{
-				if (!_buffChecks[name].Checked) continue;
-				buffs.Add(new { Name = name, Value = (float)_buffValues[name].Value });
+				if (!_buffChecks[key].Checked) continue;
+				buffs.Add(new { Name = key, Value = (float)_buffValues[key].Value });
 			}
 
 			SendString(_buffPipe, JsonConvert.SerializeObject(buffs));
@@ -332,25 +448,30 @@ namespace AutoTapTapLoot
 
 		private void buttonBuffsDefault_Click(object sender, EventArgs e)
 		{
-			SetLabelStatus(labelStatusBuff, "Default", Color.White);
+			SetLabelStatus(labelStatusBuff, _strings["StatusDefault"], Color.White);
 
 			var buffs = new List<object>();
-			foreach (string name in BuffNames)
-				buffs.Add(new { Name = name, Value = 0f });
+			foreach (string key in BuffKeys)
+				buffs.Add(new { Name = key, Value = 0f });
 
 			SendString(_buffPipe, JsonConvert.SerializeObject(buffs));
 		}
 
 		private void buttonAutoTapEnable_Click(object sender, EventArgs e)
 		{
-			SetLabelStatus(labelStatusTap, "Enabled", Color.Lime);
+			SetLabelStatus(labelStatusTap, _strings["StatusEnabled"], Color.Lime);
 			_tapEnabled = true;
 		}
 
 		private void buttonAutoTapDisable_Click(object sender, EventArgs e)
 		{
-			SetLabelStatus(labelStatusTap, "Disabled", Color.Red);
+			SetLabelStatus(labelStatusTap, _strings["StatusDisabled"], Color.Red);
 			_tapEnabled = false;
+		}
+
+		private void comboBoxLanguage_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			ApplyLanguage();
 		}
 
 	}
