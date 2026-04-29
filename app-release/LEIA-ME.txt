@@ -1,0 +1,72 @@
+═══════════════════════════════════════════════════════════════════
+  AutoTapTapLoot v1.1.0 - Tap Tap Loot Game Modifier
+═══════════════════════════════════════════════════════════════════
+
+🎮 COMO USAR:
+
+1. Certifique-se de que Tap Tap Loot está ABERTO
+2. Clique duas vezes em: AutoTapTapLoot_v1.0.0.exe
+3. Espere aparecer a janela da aplicação
+4. Selecione seu idioma (Português ou English)
+5. Configure e aproveite!
+
+═══════════════════════════════════════════════════════════════════
+
+⚙️ REQUISITOS:
+
+✓ Windows 10 ou superior
+✓ Tap Tap Loot em execução
+✓ .NET 8.0 Runtime (vem instalado com Windows 11)
+
+Se receber erro de .NET ausente:
+Baixe em: https://dotnet.microsoft.com/download
+
+═══════════════════════════════════════════════════════════════════
+
+❌ IMPORTANTE:
+
+⚠️ Bongo Cat e The Farmer Was Replaced NÃO podem estar rodando!
+   Eles usam os mesmos pipes e vai gerar conflito.
+
+⚠️ Valores extremos de buff podem quebrar seu jogo!
+   Considere fazer backup de seu save.
+
+═══════════════════════════════════════════════════════════════════
+
+📁 ARQUIVOS:
+
+AutoTapTapLoot_v1.0.0.exe ← EXECUTE ESTE ARQUIVO
+AutoTapTapLoot_v1.0.0.dll
+Newtonsoft.Json.dll
+(Outros arquivos de configuração)
+
+═══════════════════════════════════════════════════════════════════
+
+🔧 CONFIGURAÇÃO:
+
+Pacotes Por Segundo: 15 (padrão, máx 30)
+Taps Por Pacote: Aumentar para mais taps
+Amplificadores: Multiplicadores de atributos
+
+Suas configurações são salvas automaticamente em settings.json
+
+═══════════════════════════════════════════════════════════════════
+
+❓ PROBLEMAS?
+
+Erro ao conectar aos pipes:
+- Certifique-se de que o jogo está aberto
+- Feche Bongo Cat ou The Farmer Was Replaced
+- Reinicie o jogo
+
+Erro de .NET:
+- Baixe .NET 8.0 Runtime em:
+  https://dotnet.microsoft.com/download
+
+Mais ajuda:
+- Visite: https://github.com/MateusDevZip/tap-tap-loot-br
+- Crie uma issue no GitHub
+
+═══════════════════════════════════════════════════════════════════
+
+Divirta-se! 🚀
